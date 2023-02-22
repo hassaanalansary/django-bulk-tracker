@@ -58,8 +58,3 @@ jobs:
         DB_PASSWORD: postgres
         DB_HOST: localhost
         DB_PORT: 5432
-
-    - name: Upload coverage
-      uses: codecov/codecov-action@v1
-      with:
-        name: Python ${{ matrix.python-version }}
