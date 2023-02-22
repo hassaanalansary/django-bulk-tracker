@@ -51,7 +51,7 @@ jobs:
         python -m pip install --upgrade tox tox-gh-actions
     - name: Tox tests
       run: |
-        tox -v -- --cov --cov-append --cov-report term-missing --cov-report xml
+        tox
       env:
         DB_NAME: postgres
         DB_USER: postgres
