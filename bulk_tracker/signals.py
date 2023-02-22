@@ -1,7 +1,9 @@
 from django.dispatch import Signal
+
+
 """
 Signal that will be emitted when a bulk operations are used.
-If you use the ModelWithLogging
+If you use the BulkTrackerModel
 
 The receiver function should look like this
 @receiver(post_update_signal, sender=MyModel)
@@ -19,4 +21,3 @@ post_update_signal = Signal()
 
 # custom signal for bulk create
 post_create_signal = Signal()
-

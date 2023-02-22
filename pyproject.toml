@@ -13,6 +13,8 @@ lines_after_imports = 2
 atomic = true
 
 [tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "tests.settings"
 python_files = [
     "test_*.py",
 ]
+#django_find_project = false

@@ -1,3 +1,5 @@
+from typing import Optional
+
 from django.db import models
 from model_utils import FieldTracker
 
@@ -5,7 +7,7 @@ from bulk_tracker.helper_objects import TrackingInfo
 from bulk_tracker.signals import post_update_signal
 
 
-class ModelWithLogging(models.Model):
+class BulkTrackerModel(models.Model):
     tracker: FieldTracker
 
     class Meta:
@@ -16,7 +18,7 @@ class ModelWithLogging(models.Model):
         self._is_created = not updated
         return updated
 
-    def save(self, *args, tracking_info_: TrackingInfo | None = None, **kwargs):
+    def save(self, *args, tracking_info_: Optional[TrackingInfo] = None, **kwargs):
         if hasattr(self, "tracker") and self.tracker:
             changed = self.tracker.changed()
             super().save(*args, **kwargs)

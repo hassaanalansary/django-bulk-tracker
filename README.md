@@ -1,6 +1,6 @@
 # Django Quickbooks
 
-This is an ongoing project to integrate any Django project with Quickbooks Desktop and Quickbooks Online. Quickbooks 
+This is an ongoing project to integrate any Django project with Quickbooks Desktop and Quickbooks Online. Quickbooks
 integration support for <b>Python 3.6+</b> and <b>Django 2.0+</b>
 
 <div align="center">
@@ -46,12 +46,12 @@ integration support for <b>Python 3.6+</b> and <b>Django 2.0+</b>
 
 ## Roadmap
  - [x] Quickbooks Desktop Integration (most of the job is done, but can be improved)
- - [ ] Add all other remaining quickbooks objects (or most important ones) 
+ - [ ] Add all other remaining quickbooks objects (or most important ones)
  - [ ] Add all other remaining services (or most important ones)
  - [ ] Add all other remaining processors (or most important ones)
  - [ ] Quickbooks Online Integration (or most important ones)
 
- 
+
 ## Requirements
  * Python 3.6+
  * Django 2.0+
@@ -66,16 +66,16 @@ Soap server for Quickbooks Web Connector is built on top of Spyne and Lxml.
 
 ## Setup & Documentation
 ### Installation
-Installation from pypi: 
+Installation from pypi:
 ```shell script
 pip install django-quickbooks
 ```  
 OR
-  
-Installation from source (github): 
+
+Installation from source (github):
 ```shell script
 pip install -e git+https://github.com/weltlink/django-quickbooks.git@master#egg=django-quickbooks
-````   
+````  
 You can run `pip install django-quickbooks pika spyne celery redis` to install all of the dependencies.
 
 Run migrations: `manage.py makemigrations` , `manage.py migrate`
@@ -101,7 +101,7 @@ Go to setting.py and change `QB_TYPE = 'QBPOS'` instead of `'QBFS'` in `DEFAULTS
 
 ### QBWC and .qwc file
 Download QBWC from [http://marketplace.intuit.com/webconnector].  
->Make sure to use the compatible QBWC versions with your QB Desktop or QB POS version, Note that latest != compatible, 
+>Make sure to use the compatible QBWC versions with your QB Desktop or QB POS version, Note that latest != compatible,
 you may need an older version to work with your QB solution.
 
 Now we need to create a qwc file
@@ -112,14 +112,14 @@ enter the realm password for this user
 
 
 ### RabbitMQ
-You need to install RabbitMQ (if you want to use default QueueManager) which is a widely known message broker. 
-However, RabbitMQ implementation of QueueManager is being deprecated as it could not be implemented in the right way to 
-keep robust connection, instead it is recommended to use Redis. You can find instructions on how to install RabbitMQ 
+You need to install RabbitMQ (if you want to use default QueueManager) which is a widely known message broker.
+However, RabbitMQ implementation of QueueManager is being deprecated as it could not be implemented in the right way to
+keep robust connection, instead it is recommended to use Redis. You can find instructions on how to install RabbitMQ
 [here](https://www.rabbitmq.com/download.html).
 
 ### Redis
-You can also install Redis (as an alternative to RabbitMQ implementation of QueueManager) which is a widely 
-known as in-memory data structure. You can find instructions on how to install Redis 
+You can also install Redis (as an alternative to RabbitMQ implementation of QueueManager) which is a widely
+known as in-memory data structure. You can find instructions on how to install Redis
 [here](https://redis.io/topics/quickstart).
 
 ### Implementation
@@ -144,10 +144,10 @@ class Customer(models.Model, QBDModelMixin):
     zip = models.CharField(max_length=255, blank=True, null=True)
     city = models.CharField(max_length=255, blank=True, null=True)
     state = models.CharField(max_length=255, blank=True, null=True)
-    
+
     def __str__(self):
         return f'{self.first_name} {self.last_name}'
-	
+
     def to_qbd_obj(self, **fields):
         from django_quickbooks.objects import Customer as QBCustomer
         # map your fields to the qbd_obj fields
@@ -156,7 +156,7 @@ class Customer(models.Model, QBDModelMixin):
                           Phone=self.phone,
                           )
 
-    @classmethod			  
+    @classmethod  
     def from_qbd_obj(cls, qbd_obj):
         # map qbd_obj fields to your model fields
         return cls(
@@ -188,8 +188,8 @@ You can use any method you would like to create a record in QBDTask, make sure t
 
 ## Contributing
 
-Check out our [smaller-roadmap](/README.md#Roadmap) or [larger-roadmap](https://github.com/weltlink/django-quickbooks/projects/1) 
-to see on what you can help us to improve. Or if you have any problem just drop us a line 
+Check out our [smaller-roadmap](/README.md#Roadmap) or [larger-roadmap](https://github.com/weltlink/django-quickbooks/projects/1)
+to see on what you can help us to improve. Or if you have any problem just drop us a line
 or open an [issue](https://github.com/weltlink/django-quickbooks/issues/new) and we’ll work out how to handle it.
 
 ## Links
@@ -201,5 +201,5 @@ or open an [issue](https://github.com/weltlink/django-quickbooks/issues/new) and
 ## References
 This library could not be possible without contributions from other open-source projects.
 Thanks for [quickbooks-php](https://github.com/consolibyte/quickbooks-php) for giving the concept of
-creating quickbooks toolkit. Thanks for [Django_to_QuickBooks_API](https://github.com/treviza153/Django_to_QuickBooks_API) 
+creating quickbooks toolkit. Thanks for [Django_to_QuickBooks_API](https://github.com/treviza153/Django_to_QuickBooks_API)
 and [pyqwc](https://github.com/BillBarry/pyqwc) for giving core realization of soap server which made this library possible.

@@ -1,17 +1,19 @@
+from __future__ import annotations
+
 from collections.abc import Iterable
-from typing import Any, Optional, Type
+from typing import Any, Optional
 
 from django.db import connections, transaction
 from django.db.models import Case, Expression, Manager, QuerySet, Value, When
 from django.db.models.functions import Cast
 
 from bulk_tracker.helper_objects import ModifiedObject, TrackingInfo
-from bulk_tracker.models import ModelWithLogging
+from bulk_tracker.models import BulkTrackerModel
 from bulk_tracker.signals import post_update_signal
 
 
 class BulkTrackerQuerySet(QuerySet):
-    def update(self, *, tracking_info_: Optional[TrackingInfo] = None, **kwargs):
+    def update(self, *, tracking_info_: TrackingInfo | None = None, **kwargs):
         """
         This will be the single place for updating objects
         This will prevent other users from using post_save signals and other built-in signals
@@ -30,10 +32,10 @@ class BulkTrackerQuerySet(QuerySet):
 
 
 def send_post_update_signal(
-    queryset: Iterable[ModelWithLogging],
-    model: Type[ModelWithLogging],
+    queryset: Iterable[BulkTrackerModel],
+    model: type[BulkTrackerModel],
     old_values: list[dict[str, Any]],
-    tracking_info_: Optional[TrackingInfo] = None,
+    tracking_info_: TrackingInfo | None = None,
 ) -> None:
     modified_objects = []
     for obj, changed in zip(queryset, old_values):
@@ -54,7 +56,7 @@ def send_post_update_signal(
 
 class BulkTrackerManager(Manager):
     # This function is just copied from django core, with minor modification to accept TrackingInfo
-    def bulk_update(self, objs, fields, batch_size=None, *, tracking_info_: Optional[TrackingInfo] = None) -> None:
+    def bulk_update(self, objs, fields, batch_size=None, *, tracking_info_: TrackingInfo | None = None) -> None:
         """
         Update the given fields in each of the given objects in the database.
         """
