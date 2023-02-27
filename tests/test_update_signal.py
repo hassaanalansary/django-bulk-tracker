@@ -11,11 +11,11 @@ from tests.models import Author, Post
 
 class TestBulkUpdate(TestCase):
     @classmethod
-    def setUpTestData(cls):
+    def setUp(cls):
         author_john = Author.objects.create(first_name="John", last_name="Doe")
         Post.objects.create(title="Defend the Lie", publish_date="1999-05-19", author=author_john)
         Post.objects.create(title="Cold Vice", publish_date="2001-07-22", author=author_john)
-        Post.objects.create(title="Defend the Lie", publish_date="2000-09-12", author=author_john)
+        Post.objects.create(title="Sound of Winter", publish_date="2000-09-12", author=author_john)
 
         author_soha = Author.objects.create(first_name="Soha", last_name="Reid")
         Post.objects.create(title="Prince's Advent", publish_date="1996-07-09", author=author_soha)
@@ -23,11 +23,11 @@ class TestBulkUpdate(TestCase):
 
         author_bert = Author.objects.create(first_name="Bert", last_name="Butler")
         Post.objects.create(title="Sharing Season", publish_date="2001-08-20", author=author_bert)
-        Post.objects.create(title="Before Us", publish_date="1999-11-01", author=author_bert)
+        Post.objects.create(title="Before Us", publish_date="1999-05-19", author=author_bert)
 
     @staticmethod
     def use_bulk_update():
-        posts = Post.objects.filter(publish_date__year="1999").order_by("publish_date")
+        posts = Post.objects.filter(publish_date="1999-05-19").order_by("publish_date")
         for post in posts:
             post.publish_date = "1999-12-31"
         signal_called_with: dict = {}
@@ -55,6 +55,9 @@ class TestBulkUpdate(TestCase):
         modified_objects: list[ModifiedObject[Post]] = signal_called_with["objects"]
         for modified_object in modified_objects:
             self.assertEqual(datetime.strptime("1999-12-31", "%Y-%m-%d").date(), modified_object.obj.publish_date)
+            self.assertEqual(
+                datetime.strptime("1999-05-19", "%Y-%m-%d").date(), modified_object.changed_values["publish_date"]
+            )
 
     def test_should_raise_attribute_error_when_model_does_not_have_tracker(self):
         del Post.tracker
@@ -65,3 +68,51 @@ class TestBulkUpdate(TestCase):
             f"Model {Post} doesn't have tracker, please add `tracker = FieldTracker()` to your model",
             context.exception.args[0],
         )
+
+    def test_model_save_should_emit_post_update_signal(self):
+        signal_called_with = {}
+
+        def post_update_receiver(
+            sender,
+            objects: list[ModifiedObject[Post]],
+            tracking_info_: TrackingInfo | None = None,
+            **kwargs,
+        ):
+            signal_called_with["objects"] = objects
+            signal_called_with["tracking_info_"] = tracking_info_
+
+        post_update_signal.connect(post_update_receiver, sender=Post)
+        post = Post.objects.get(title="Sound of Winter")
+        post.title = "Sound of Summer"
+        post.save()
+        self.assertTrue(signal_called_with != {})
+        self.assertEqual(1, len(signal_called_with["objects"]))
+        self.assertEqual(None, signal_called_with["tracking_info_"])
+
+        ### split into another test case
+        modified_objects: list[ModifiedObject[Post]] = signal_called_with["objects"]
+        self.assertEqual("Sound of Summer", modified_objects[0].obj.title)
+        self.assertEqual("Sound of Winter", modified_objects[0].changed_values["title"])
+
+    def test_queryset_update_should_emit_post_update_signal(self):
+        signal_called_with = {}
+
+        def post_update_receiver(
+            sender,
+            objects: list[ModifiedObject[Post]],
+            tracking_info_: TrackingInfo | None = None,
+            **kwargs,
+        ):
+            signal_called_with["objects"] = objects
+            signal_called_with["tracking_info_"] = tracking_info_
+
+        post_update_signal.connect(post_update_receiver, sender=Post)
+        Post.objects.filter(title="The Midnight Wolf").update(title="The Sunset Wolf")
+
+        self.assertTrue(signal_called_with != {})
+        self.assertEqual(1, len(signal_called_with["objects"]))
+        self.assertEqual(None, signal_called_with["tracking_info_"])
+
+        modified_objects: list[ModifiedObject[Post]] = signal_called_with["objects"]
+        self.assertEqual("The Sunset Wolf", modified_objects[0].obj.title)
+        self.assertEqual("The Midnight Wolf", modified_objects[0].changed_values["title"])

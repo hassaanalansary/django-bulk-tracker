@@ -1,15 +1,18 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
-from typing import Any, Optional
+from typing import TYPE_CHECKING, Any
 
 from django.db import connections, transaction
 from django.db.models import Case, Expression, Manager, QuerySet, Value, When
 from django.db.models.functions import Cast
 
 from bulk_tracker.helper_objects import ModifiedObject, TrackingInfo
-from bulk_tracker.models import BulkTrackerModel
 from bulk_tracker.signals import post_update_signal
+
+
+if TYPE_CHECKING:
+    from bulk_tracker.models import BulkTrackerModel
 
 
 class BulkTrackerQuerySet(QuerySet):
@@ -19,22 +22,31 @@ class BulkTrackerQuerySet(QuerySet):
         This will prevent other users from using post_save signals and other built-in signals
         because in my opinion they are bad practice, and prevent developers from supporting bulk operations
         instead this will send `post_update_signal` with all the changed objects and their old_values
+
+        if `post_update_signal` has listeners this will result in an extra 2 queries in order to retrieve the diff.
         """
         signal_has_listener = post_update_signal.has_listeners(sender=self.model)
         # if the model doesn't have any listener on this signal, don't bother doing anything
         if not signal_has_listener:
             return super().update(**kwargs)
 
-        old_values = [_get_old_values(obj, kwargs) for obj in self]
+        # if we have listeners:
+        # 1- we will consume the queryset
+        old_values = (_get_old_values(obj, kwargs) for obj in self)
+        # 2- create a new queryset based on the PK.
+        # because the user may be updating the same value as the criteria which will lead to an empty queryset if we
+        # loop on `self` again. i.e. `Post.objects.filter(title="The Midnight Wolf").update(title="The Sunset Wolf")`
+        queryset = self.model.objects.filter(pk__in=(instance.pk for instance in self)).only(*kwargs.keys())
+
         result = super().update(**kwargs)
-        send_post_update_signal(self, self.model, old_values, tracking_info_)
+        send_post_update_signal(queryset, self.model, old_values, tracking_info_)
         return result
 
 
 def send_post_update_signal(
     queryset: Iterable[BulkTrackerModel],
     model: type[BulkTrackerModel],
-    old_values: list[dict[str, Any]],
+    old_values: Iterable[dict[str, Any]],
     tracking_info_: TrackingInfo | None = None,
 ) -> None:
     modified_objects = []

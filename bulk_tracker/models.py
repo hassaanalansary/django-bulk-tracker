@@ -4,7 +4,7 @@ from django.db import models
 from model_utils import FieldTracker
 
 from bulk_tracker.helper_objects import TrackingInfo
-from bulk_tracker.signals import post_update_signal
+from bulk_tracker.managers import send_post_update_signal
 
 
 class BulkTrackerModel(models.Model):
@@ -23,7 +23,7 @@ class BulkTrackerModel(models.Model):
             changed = self.tracker.changed()
             super().save(*args, **kwargs)
             if not self._is_created and changed:
-                post_update_signal([self], model=self.__class__, old_values=[changed])
+                send_post_update_signal([self], model=self.__class__, old_values=[changed])
         else:
             raise AttributeError(
                 f"Model {self.__class__} doesn't have tracker, please add `tracker = FieldTracker()` to your model"
