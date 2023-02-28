@@ -1,18 +1,23 @@
 from __future__ import annotations
 
-from collections.abc import Iterable
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 from django.db import connections, transaction
-from django.db.models import Case, Expression, Manager, QuerySet, Value, When
+from django.db.models import AutoField, Expression, Manager, QuerySet
+from django.db.models.expressions import Case, Value, When
 from django.db.models.functions import Cast
+from django.utils.functional import partition
 
-from bulk_tracker.helper_objects import ModifiedObject, TrackingInfo
-from bulk_tracker.signals import post_update_signal
+from bulk_tracker.helper_objects import TrackingInfo
+from bulk_tracker.signals import (
+    post_update_signal,
+    send_post_create_signal,
+    send_post_update_signal,
+)
 
 
 if TYPE_CHECKING:
-    from bulk_tracker.models import BulkTrackerModel
+    pass
 
 
 class BulkTrackerQuerySet(QuerySet):
@@ -42,28 +47,14 @@ class BulkTrackerQuerySet(QuerySet):
         send_post_update_signal(queryset, self.model, old_values, tracking_info_)
         return result
 
-
-def send_post_update_signal(
-    queryset: Iterable[BulkTrackerModel],
-    model: type[BulkTrackerModel],
-    old_values: Iterable[dict[str, Any]],
-    tracking_info_: TrackingInfo | None = None,
-) -> None:
-    modified_objects = []
-    for obj, changed in zip(queryset, old_values):
-        diff_dict = {}
-        for key, old_value in changed.items():
-            if getattr(obj, key) != old_value:  # if new_values != old_value
-                diff_dict[key] = old_value
-        if diff_dict:
-            modified_objects.append(ModifiedObject(obj, diff_dict))
-
-    if modified_objects:
-        post_update_signal.send(
-            sender=model,
-            objects=modified_objects,
-            tracking_info_=tracking_info_,
-        )
+    def create(self, *, tracking_info_: TrackingInfo | None = None, **kwargs):
+        """
+        Create a new object with the given kwargs, saving it to the database
+        and returning the created object.
+        """
+        obj = super().create(**kwargs)
+        send_post_create_signal([obj], model=self.model, tracking_info_=tracking_info_)
+        return obj
 
 
 class BulkTrackerManager(Manager):
@@ -110,6 +101,36 @@ class BulkTrackerManager(Manager):
         with transaction.atomic(using=self.db, savepoint=False):
             for pks, update_kwargs in updates:
                 self.filter(pk__in=pks).update(tracking_info_=tracking_info_, **update_kwargs)
+
+    def bulk_create(
+        self,
+        objs,
+        batch_size=None,
+        ignore_conflicts=False,
+        update_conflicts=False,
+        update_fields=None,
+        unique_fields=None,
+        *,
+        tracking_info_: TrackingInfo | None = None,
+    ):
+        """
+        Insert each of the instances into the database. Do *not* call
+        save() on each of the instances, do not send any pre/post_save
+        signals, and do not set the primary key attribute if it is an
+        autoincrement field (except if features.can_return_rows_from_bulk_insert=True).
+        Multi-table models are not supported.
+        Will send `send_post_create_signal` with the created objects
+        """
+        objs = super().bulk_create(
+            objs,
+            batch_size=batch_size,
+            ignore_conflicts=ignore_conflicts,
+            update_conflicts=update_conflicts,
+            update_fields=update_fields,
+            unique_fields=unique_fields,
+        )
+        send_post_create_signal(objs, self.model, tracking_info_)
+        return objs
 
 
 def _get_old_values(obj, kwargs):

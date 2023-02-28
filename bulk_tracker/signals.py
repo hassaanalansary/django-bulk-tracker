@@ -1,4 +1,11 @@
+from __future__ import annotations
+
+from typing import Any, Iterable
+
 from django.dispatch import Signal
+
+from bulk_tracker.helper_objects import ModifiedObject, TrackingInfo
+from bulk_tracker.models import BulkTrackerModel
 
 
 """
@@ -14,6 +21,15 @@ def i_am_a_receiver_function(
     **kwargs,
 ):
     do_stuff()
+    
+@receiver(post_create_signal, sender=MyModel)
+def i_am_a_receiver_function(
+    sender,
+    objects: list[ModifiedObject[MyModel]],
+    tracking_info_: Optional[TrackingInfo] = None,
+    **kwargs,
+):
+    do_stuff()
 """
 
 # custom signal for bulk update
@@ -21,3 +37,38 @@ post_update_signal = Signal()
 
 # custom signal for bulk create
 post_create_signal = Signal()
+
+
+def send_post_create_signal(
+    objs: Iterable[BulkTrackerModel], model: type[BulkTrackerModel], tracking_info_: TrackingInfo | None = None
+):
+    modified_objects = [ModifiedObject(ob, {}) for ob in objs]
+    if modified_objects:
+        post_create_signal.send(
+            objects=modified_objects,
+            sender=model,
+            tracking_info_=tracking_info_,
+        )
+
+
+def send_post_update_signal(
+    queryset: Iterable[BulkTrackerModel],
+    model: type[BulkTrackerModel],
+    old_values: Iterable[dict[str, Any]],
+    tracking_info_: TrackingInfo | None = None,
+) -> None:
+    modified_objects = []
+    for obj, changed in zip(queryset, old_values):
+        diff_dict = {}
+        for key, old_value in changed.items():
+            if getattr(obj, key) != old_value:  # if new_values != old_value
+                diff_dict[key] = old_value
+        if diff_dict:
+            modified_objects.append(ModifiedObject(obj, diff_dict))
+
+    if modified_objects:
+        post_update_signal.send(
+            sender=model,
+            objects=modified_objects,
+            tracking_info_=tracking_info_,
+        )
