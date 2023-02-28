@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Generic, TypeVar
 
 from django.db import models
@@ -23,3 +23,4 @@ class TrackingInfo:
     comment: str | None = None
     reason: Model | None = None
     system: str | None = None
+    kwargs: dict[str, Any] = field(default_factory=dict, kw_only=True)
