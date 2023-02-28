@@ -13,7 +13,7 @@ User = TypeVar("User", bound=models.Model)
 
 @dataclass
 class ModifiedObject(Generic[_T]):
-    obj: _T
+    instance: _T
     changed_values: dict[str, Any]
 
 

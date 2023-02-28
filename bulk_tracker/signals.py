@@ -1,11 +1,14 @@
 from __future__ import annotations
 
-from typing import Any, Iterable
+from typing import TYPE_CHECKING, Any, Iterable
 
 from django.dispatch import Signal
 
 from bulk_tracker.helper_objects import ModifiedObject, TrackingInfo
-from bulk_tracker.models import BulkTrackerModel
+
+
+if TYPE_CHECKING:
+    from bulk_tracker.models import BulkTrackerModel
 
 
 """

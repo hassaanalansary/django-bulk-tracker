@@ -1,12 +1,9 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from django.db import connections, transaction
-from django.db.models import AutoField, Expression, Manager, QuerySet
+from django.db.models import Expression, Manager, QuerySet
 from django.db.models.expressions import Case, Value, When
 from django.db.models.functions import Cast
-from django.utils.functional import partition
 
 from bulk_tracker.helper_objects import TrackingInfo
 from bulk_tracker.signals import (
@@ -14,10 +11,7 @@ from bulk_tracker.signals import (
     send_post_create_signal,
     send_post_update_signal,
 )
-
-
-if TYPE_CHECKING:
-    pass
+from bulk_tracker.utils import get_old_values
 
 
 class BulkTrackerQuerySet(QuerySet):
@@ -37,7 +31,7 @@ class BulkTrackerQuerySet(QuerySet):
 
         # if we have listeners:
         # 1- we will consume the queryset
-        old_values = (_get_old_values(obj, kwargs) for obj in self)
+        old_values = (get_old_values(obj, kwargs) for obj in self)
         # 2- create a new queryset based on the PK.
         # because the user may be updating the same value as the criteria which will lead to an empty queryset if we
         # loop on `self` again. i.e. `Post.objects.filter(title="The Midnight Wolf").update(title="The Sunset Wolf")`
@@ -56,8 +50,6 @@ class BulkTrackerQuerySet(QuerySet):
         send_post_create_signal([obj], model=self.model, tracking_info_=tracking_info_)
         return obj
 
-
-class BulkTrackerManager(Manager):
     # This function is just copied from django core, with minor modification to accept TrackingInfo
     def bulk_update(self, objs, fields, batch_size=None, *, tracking_info_: TrackingInfo | None = None) -> None:
         """
@@ -102,16 +94,13 @@ class BulkTrackerManager(Manager):
             for pks, update_kwargs in updates:
                 self.filter(pk__in=pks).update(tracking_info_=tracking_info_, **update_kwargs)
 
+    # This function is just copied from django core, with minor modification to accept TrackingInfo
     def bulk_create(
         self,
         objs,
-        batch_size=None,
-        ignore_conflicts=False,
-        update_conflicts=False,
-        update_fields=None,
-        unique_fields=None,
         *,
         tracking_info_: TrackingInfo | None = None,
+        **kwargs,
     ):
         """
         Insert each of the instances into the database. Do *not* call
@@ -119,19 +108,12 @@ class BulkTrackerManager(Manager):
         signals, and do not set the primary key attribute if it is an
         autoincrement field (except if features.can_return_rows_from_bulk_insert=True).
         Multi-table models are not supported.
-        Will send `send_post_create_signal` with the created objects
+        Will send `post_create_signal` with the created objects
         """
-        objs = super().bulk_create(
-            objs,
-            batch_size=batch_size,
-            ignore_conflicts=ignore_conflicts,
-            update_conflicts=update_conflicts,
-            update_fields=update_fields,
-            unique_fields=unique_fields,
-        )
+        objs = super().bulk_create(objs, **kwargs)
         send_post_create_signal(objs, self.model, tracking_info_)
         return objs
 
 
-def _get_old_values(obj, kwargs):
-    return {key: getattr(obj, key) for key, value in kwargs.items()}
+class BulkTrackerManager(Manager):
+    pass

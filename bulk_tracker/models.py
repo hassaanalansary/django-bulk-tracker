@@ -18,10 +18,17 @@ class BulkTrackerModel(models.Model):
         self._is_created = not updated
         return updated
 
-    def save(self, *args, tracking_info_: Optional[TrackingInfo] = None, **kwargs):
+    def save(
+        self,
+        force_insert=False,
+        force_update=False,
+        using=None,
+        update_fields=None,
+        tracking_info_: Optional[TrackingInfo] = None,
+    ):
         if hasattr(self, "tracker") and self.tracker:
             changed = self.tracker.changed()
-            super().save(*args, **kwargs)
+            super().save(force_insert=force_insert, force_update=force_update, using=using, update_fields=update_fields)
             if not self._is_created and changed:
                 send_post_update_signal(
                     [self], model=self.__class__, old_values=[changed], tracking_info_=tracking_info_
