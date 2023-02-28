@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Iterable
+from collections.abc import Iterable
+from typing import TYPE_CHECKING, Any
 
 from django.dispatch import Signal
 
@@ -12,34 +13,35 @@ if TYPE_CHECKING:
 
 
 """
-Signal that will be emitted when a bulk operations are used.
+Signals that will be emitted when a bulk operations are used.
 If you use the BulkTrackerModel
+"""
 
+"""
 The receiver function should look like this
 @receiver(post_update_signal, sender=MyModel)
 def i_am_a_receiver_function(
     sender,
     objects: list[ModifiedObject[MyModel]],
-    tracking_info_: Optional[TrackingInfo] = None,
-    **kwargs,
-):
-    do_stuff()
-    
-@receiver(post_create_signal, sender=MyModel)
-def i_am_a_receiver_function(
-    sender,
-    objects: list[ModifiedObject[MyModel]],
-    tracking_info_: Optional[TrackingInfo] = None,
+    tracking_info_: TrackingInfo | None = None,
     **kwargs,
 ):
     do_stuff()
 """
+post_update_signal = Signal()  # custom signal for bulk and single update
 
-# custom signal for bulk update
-post_update_signal = Signal()
 
-# custom signal for bulk create
-post_create_signal = Signal()
+"""
+# @receiver(post_create_signal, sender=MyModel)
+# def i_am_a_receiver_function(
+#     sender,
+#     objects: list[ModifiedObject[MyModel]],
+#     tracking_info_: TrackingInfo | None = None,
+#     **kwargs,
+# ):
+#     do_stuff()
+"""
+post_create_signal = Signal()  # custom signal for bulk and single create
 
 
 def send_post_create_signal(

@@ -1,4 +1,4 @@
-from typing import Optional
+from __future__ import annotations
 
 from django.db import models
 from model_utils import FieldTracker
@@ -18,17 +18,10 @@ class BulkTrackerModel(models.Model):
         self._is_created = not updated
         return updated
 
-    def save(
-        self,
-        force_insert=False,
-        force_update=False,
-        using=None,
-        update_fields=None,
-        tracking_info_: Optional[TrackingInfo] = None,
-    ):
+    def save(self, tracking_info_: TrackingInfo | None = None, **kwargs):
         if hasattr(self, "tracker") and self.tracker:
             changed = self.tracker.changed()
-            super().save(force_insert=force_insert, force_update=force_update, using=using, update_fields=update_fields)
+            super().save(**kwargs)
             if not self._is_created and changed:
                 send_post_update_signal(
                     [self], model=self.__class__, old_values=[changed], tracking_info_=tracking_info_
