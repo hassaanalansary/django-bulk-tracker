@@ -13,11 +13,14 @@ pip install -r requirements_dev.txt
 pytest
 ```
 
-Contributing
-============
+Contribute
+----------
 
-Please file bugs and send pull requests to the `GitHub repository`_ and `issue
-tracker`_. See `CONTRIBUTING.rst`_ for details.
+If you have great ideas for django-bulk-tracker, or if you like to improve something,
+feel free to fork this repository and/or create a pull request. 
+I'm open for suggestions. 
+If you like to discuss something with me (about django-bulk-tracker), please open an issue.
 
-#### GitHub repository: https://github.com/hassaanalansary/django-bulk-tracker/
+
+#### GitHub repository: https://github.com/hassaanalansary/django-bulk-tracker
 #### issue tracker: https://github.com/hassaanalansary/django-bulk-tracker/issues
