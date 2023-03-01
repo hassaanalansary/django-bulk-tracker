@@ -42,6 +42,6 @@ jobs:
           twine check dist/*
       - name: Upload packages to PyPi
         if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
-        uses: pypa/gh-action-pypi-publish@master
+        uses: pypa/gh-action-pypi-publish@release/v1
         with:
           password: ${{ secrets.RELEASE_KEY }}
