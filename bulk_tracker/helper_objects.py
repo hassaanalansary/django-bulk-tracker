@@ -23,4 +23,4 @@ class TrackingInfo:
     comment: str | None = None
     reason: Model | None = None
     system: str | None = None
-    kwargs: dict[str, Any] = field(default_factory=dict, kw_only=True)
+    kwargs: dict[str, Any] = field(default_factory=dict)
