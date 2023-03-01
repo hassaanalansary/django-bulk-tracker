@@ -19,4 +19,4 @@ Auditlog is currently tested with Python 3.9+ and Django 3.2 and 4.0+.
 Adding django-bulk-tracker to your Django application
 ------------------------------------------
 
-To use django-bulk-tracker in your application, just add ``'bulk-tracker'`` to your project's ``INSTALLED_APPS`` `settings.py`
+To use django-bulk-tracker in your application, just add ``'bulk-tracker'`` to your project's ``INSTALLED_APPS`` ``settings.py``
