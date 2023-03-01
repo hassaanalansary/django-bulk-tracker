@@ -1,5 +1,5 @@
 django-bulk-tracker documentation
-=============================
+=================================
 django-bulk-tracker is a reusable app for Django that allow you to have signals (``post_update_signal`` and ``post_create_signal``)
 that will be sent with your bulk operations.
 i.e. ``bulk_update()``, ``bulk_create()``, ``queryset.update()``.
@@ -16,7 +16,7 @@ django-bulk-tracker will send
 - ``post_create_signal`` when you do ``.save()`` on a new model instance, ``create()``, or ``bulk_create()``
 
 Dependencies
-==========
+============
 1. Python >=3.9
 2. Django >=3.2
 3. django-model-utils >=4.0.0
@@ -35,7 +35,7 @@ Contents
 
 
 Contribute to django-bulk-tracker
-----------------------
+---------------------------------
 
 If you discovered a bug or want to improve the code, please submit an issue and/or pull request via GitHub.
 Before submitting a new issue, please make sure there is no issue submitted that involves the same problem.
