@@ -42,3 +42,11 @@ Before submitting a new issue, please make sure there is no issue submitted that
 
 | GitHub repository: https://github.com/hassaanalansary/django-bulk-tracker
 | Issues: https://github.com/hassaanalansary/django-bulk-tracker
+
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
