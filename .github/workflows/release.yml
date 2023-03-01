@@ -45,4 +45,3 @@ jobs:
         uses: pypa/gh-action-pypi-publish@master
         with:
           password: ${{ secrets.RELEASE_KEY }}
-          repository_url: https://pypi.org/project/django-bulk-tracker/
