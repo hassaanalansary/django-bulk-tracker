@@ -22,13 +22,6 @@ from bulk_tracker import __version__
 # Add sources folder
 sys.path.insert(0, os.path.abspath("../../"))
 
-# Setup Django for autodoc
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "tests.settings")
-import django  # noqa: E402
-
-
-django.setup()
-
 # -- Project information -----------------------------------------------------
 
 project = "django-bulk-tracker"
