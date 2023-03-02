@@ -51,7 +51,9 @@ class BulkTrackerQuerySet(QuerySet):
         return obj
 
     # This function is just copied from django core, with minor modification to accept TrackingInfo
-    def bulk_update(self, objs, fields, batch_size=None, *, tracking_info_: TrackingInfo | None = None) -> None:
+    def bulk_update(
+        self, objs, fields, batch_size=None, *args, tracking_info_: TrackingInfo | None = None, **kwargs
+    ) -> None:
         """
         Update the given fields in each of the given objects in the database.
         """
@@ -94,14 +96,7 @@ class BulkTrackerQuerySet(QuerySet):
             for pks, update_kwargs in updates:
                 self.filter(pk__in=pks).update(tracking_info_=tracking_info_, **update_kwargs)
 
-    # This function is just copied from django core, with minor modification to accept TrackingInfo
-    def bulk_create(
-        self,
-        objs,
-        *,
-        tracking_info_: TrackingInfo | None = None,
-        **kwargs,
-    ):
+    def bulk_create(self, *args, tracking_info_: TrackingInfo | None = None, **kwargs):
         """
         Insert each of the instances into the database. Do *not* call
         save() on each of the instances, do not send any pre/post_save
@@ -110,7 +105,7 @@ class BulkTrackerQuerySet(QuerySet):
         Multi-table models are not supported.
         Will send `post_create_signal` with the created objects
         """
-        objs = super().bulk_create(objs, **kwargs)
+        objs = super().bulk_create(*args, **kwargs)
         send_post_create_signal(objs, self.model, tracking_info_)
         return objs
 
