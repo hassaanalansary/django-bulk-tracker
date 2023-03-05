@@ -7,8 +7,10 @@ from django.db.models.functions import Cast
 
 from bulk_tracker.helper_objects import TrackingInfo
 from bulk_tracker.signals import (
+    post_delete_signal,
     post_update_signal,
     send_post_create_signal,
+    send_post_delete_signal,
     send_post_update_signal,
 )
 from bulk_tracker.utils import get_old_values
@@ -108,6 +110,14 @@ class BulkTrackerQuerySet(QuerySet):
         objs = super().bulk_create(*args, **kwargs)
         send_post_create_signal(objs, self.model, tracking_info_)
         return objs
+
+    def delete(self, *, tracking_info_: TrackingInfo | None = None, **kwarg):
+        if not post_delete_signal.has_listeners(self.model):
+            return super().delete()
+        objs = (obj for obj in self)
+        result = super().delete()
+        send_post_delete_signal(objs, self.model, tracking_info_)
+        return result
 
 
 class BulkTrackerManager(Manager):

@@ -4,7 +4,11 @@ from django.db import models
 from model_utils import FieldTracker
 
 from bulk_tracker.helper_objects import TrackingInfo
-from bulk_tracker.signals import send_post_create_signal, send_post_update_signal
+from bulk_tracker.signals import (
+    send_post_create_signal,
+    send_post_delete_signal,
+    send_post_update_signal,
+)
 
 
 class BulkTrackerModel(models.Model):
@@ -33,3 +37,7 @@ class BulkTrackerModel(models.Model):
             raise AttributeError(
                 f"Model {self.__class__} doesn't have tracker, please add `tracker = FieldTracker()` to your model"
             )
+
+    def delete(self, *args,tracking_info_: TrackingInfo | None = None, **kwargs):
+        send_post_delete_signal([self], model=self.__class__, tracking_info_=tracking_info_)
+        return super().delete(*args,**kwargs)
