@@ -71,11 +71,12 @@ def send_post_create_signal(
 def send_post_update_signal(
     queryset: Iterable[BulkTrackerModel],
     model: type[BulkTrackerModel],
-    old_values: Iterable[dict[str, Any]],
+    old_values: dict[int, [dict[str, Any]]],  # {pk: changed_values}
     tracking_info_: TrackingInfo | None = None,
 ) -> None:
     modified_objects = []
-    for obj, changed in zip(queryset, old_values):
+    for obj in queryset:
+        changed = old_values[obj.pk]
         diff_dict = {}
         for key, old_value in changed.items():
             if getattr(obj, key) != old_value:  # if new_values != old_value

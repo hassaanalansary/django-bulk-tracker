@@ -28,7 +28,7 @@ class BulkTrackerModel(models.Model):
             super().save(**kwargs)
             if not self._is_created and changed:
                 send_post_update_signal(
-                    [self], model=self.__class__, old_values=[changed], tracking_info_=tracking_info_
+                    [self], model=self.__class__, old_values={self.pk: changed}, tracking_info_=tracking_info_
                 )
             elif self._is_created:
                 send_post_create_signal([self], model=self.__class__, tracking_info_=tracking_info_)
@@ -38,6 +38,6 @@ class BulkTrackerModel(models.Model):
                 f"Model {self.__class__} doesn't have tracker, please add `tracker = FieldTracker()` to your model"
             )
 
-    def delete(self, *args,tracking_info_: TrackingInfo | None = None, **kwargs):
+    def delete(self, *args, tracking_info_: TrackingInfo | None = None, **kwargs):
         send_post_delete_signal([self], model=self.__class__, tracking_info_=tracking_info_)
-        return super().delete(*args,**kwargs)
+        return super().delete(*args, **kwargs)

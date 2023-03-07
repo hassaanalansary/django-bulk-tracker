@@ -33,11 +33,16 @@ class BulkTrackerQuerySet(QuerySet):
 
         # if we have listeners:
         # 1- we will consume the queryset
-        old_values = (get_old_values(obj, kwargs) for obj in self)
+        old_values = {}
+        pks = []
+        for obj in self:
+            pks.append(obj.pk)
+            old_values[obj.pk] = get_old_values(obj, kwargs)
+
         # 2- create a new queryset based on the PK.
         # because the user may be updating the same value as the criteria which will lead to an empty queryset if we
         # loop on `self` again. i.e. `Post.objects.filter(title="The Midnight Wolf").update(title="The Sunset Wolf")`
-        queryset = self.model.objects.filter(pk__in=(instance.pk for instance in self)).only(*kwargs.keys())
+        queryset = self.model.objects.filter(pk__in=pks).only(*kwargs.keys())
 
         result = super().update(**kwargs)
         send_post_update_signal(queryset, self.model, old_values, tracking_info_)
