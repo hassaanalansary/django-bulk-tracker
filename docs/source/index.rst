@@ -4,7 +4,7 @@ django-bulk-tracker is a reusable app for Django that allow you to have signals 
 that will be sent with your bulk operations.
 i.e. ``bulk_update()``, ``bulk_create()``, ``queryset.update()``.
 
-django-bulk-tracker allows you to pass tracking date related to your save/create operation.
+django-bulk-tracker allows you to pass tracking data related to your save/create operation.
 a feature that is missing from django builtin ``post_save`` signal.
 
 You can use ``post_update_signal`` and ``post_create_signal`` and ``tracking_info`` to stop relying

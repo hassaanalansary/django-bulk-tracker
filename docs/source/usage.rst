@@ -36,7 +36,7 @@ now you can listen to the signals ``post_update_signal``, ``post_create_signal``
         do_stuff()
 
 .. hint:: 
-    all signal has the same signature for consistency, 
+    all signals have the same signature for consistency,
     and also in case you want to assign one function to listen to multiple signals
 
 
