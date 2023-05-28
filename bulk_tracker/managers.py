@@ -125,5 +125,5 @@ class BulkTrackerQuerySet(QuerySet):
         return result
 
 
-class BulkTrackerManager(Manager):
+class BulkTrackerManager(Manager.from_queryset(BulkTrackerQuerySet)):
     pass
