@@ -16,12 +16,21 @@ and single operations:
 - ``save() # update and create``
 - ``delete()``
 
-all you need to do is to define your queryset and inherit from::
+all you need to do is to define your Model and inherit from::
+
+    from bulk_tracker.models import BulkTrackerModel
+
+    class Author(BulkTrackerModel):
+    first_name = models.CharField(max_length=200)
+    last_name = models.CharField(max_length=200)
+
+OR if you have a custom queryset inherit from or Don't want to support single-operation::
 
     from bulk_tracker.managers import BulkTrackerQuerySet
 
     class MyModelQuerySet(BulkTrackerQuerySet):
-        pass
+        def do_something_custom(self):
+            pass
 
 
 now you can listen to the signals ``post_update_signal``, ``post_create_signal``, ``post_delete_signal``::
@@ -113,14 +122,14 @@ Complete Example
 ::
 
     # managers.py
-    from bulk_tracker.managers import BulkTrackerQuerySet
+    from bulk_tracker.managers import BulkTrackerQuerySet # optional
 
 
     class MyModelQuerySet(BulkTrackerQuerySet):
         pass
 
 
-    class MyModelManager(BulkTrackerManager.from_queryset(MyModelQuerySet)):
+    class MyModelManager(BulkTrackerManager.from_queryset(MyModelQuerySet)): # optional
         pass
 
 ::
