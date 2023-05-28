@@ -4,6 +4,7 @@ from django.db import models
 from model_utils import FieldTracker
 
 from bulk_tracker.helper_objects import TrackingInfo
+from bulk_tracker.managers import BulkTrackerManager
 from bulk_tracker.signals import (
     send_post_create_signal,
     send_post_delete_signal,
@@ -12,6 +13,7 @@ from bulk_tracker.signals import (
 
 
 class BulkTrackerModel(models.Model):
+    objects = BulkTrackerManager()
     tracker: FieldTracker
 
     class Meta:
