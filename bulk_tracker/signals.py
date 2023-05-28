@@ -32,26 +32,26 @@ post_update_signal = Signal()  # custom signal for bulk and single update
 
 
 """
-# @receiver(post_create_signal, sender=MyModel)
-# def i_am_a_receiver_function(
-#     sender,
-#     objects: list[ModifiedObject[MyModel]],
-#     tracking_info_: TrackingInfo | None = None,
-#     **kwargs,
-# ):
-#     do_stuff()
+@receiver(post_create_signal, sender=MyModel)
+def i_am_a_receiver_function(
+    sender,
+    objects: list[ModifiedObject[MyModel]],
+    tracking_info_: TrackingInfo | None = None,
+    **kwargs,
+):
+    do_stuff()
 """
 post_create_signal = Signal()  # custom signal for bulk and single create
 
 """
-# @receiver(post_delete_signal, sender=MyModel)
-# def i_am_a_receiver_function(
-#     sender,
-#     objects: list[ModifiedObject[MyModel]],
-#     tracking_info_: TrackingInfo | None = None,
-#     **kwargs,
-# ):
-#     do_stuff()
+@receiver(post_delete_signal, sender=MyModel)
+def i_am_a_receiver_function(
+    sender,
+    objects: list[ModifiedObject[MyModel]],
+    tracking_info_: TrackingInfo | None = None,
+    **kwargs,
+):
+    do_stuff()
 """
 post_delete_signal = Signal()  # custom signal for bulk and single delete
 
