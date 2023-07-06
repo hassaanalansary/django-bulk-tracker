@@ -53,8 +53,9 @@ class BulkTrackerQuerySet(QuerySet):
         Create a new object with the given kwargs, saving it to the database
         and returning the created object.
         """
+
+        # NOTE: send_post_create_signal is called after 'create' gets executed, where model.save is called
         obj = super().create(**kwargs)
-        send_post_create_signal([obj], model=self.model, tracking_info_=tracking_info_)
         return obj
 
     # This function is just copied from django core, with minor modification to accept TrackingInfo
