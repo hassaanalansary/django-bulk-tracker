@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from unittest.mock import patch
+
 from django.test import TestCase
 
 from bulk_tracker.helper_objects import ModifiedObject, TrackingInfo
@@ -109,3 +111,74 @@ class TestCreateSignal(TestCase):
         self.assertEqual("1998-01-08", modified_objects[0].instance.publish_date)
         self.assertEqual(self.author_john, modified_objects[0].instance.author)
         self.assertEqual({}, modified_objects[0].changed_values)
+
+    @patch('bulk_tracker.signals.post_create_signal.send')
+    def test_model_save_should_only_emit_post_create_signal_once(self, mocked_signal):
+        # Arrange
+        signal_called_with = {}
+
+        def post_create_receiver(
+                sender,
+                objects: list[ModifiedObject[Post]],
+                tracking_info_: TrackingInfo | None = None,
+                **kwargs,
+        ):
+            signal_called_with["objects"] = objects
+            signal_called_with["tracking_info_"] = tracking_info_
+
+        post_create_signal.connect(post_create_receiver, sender=Post)
+
+        # Act
+        Post(title="Sound of Winter", publish_date="1998-01-08", author=self.author_john).save()
+
+        # Assert
+        self.assertEqual(mocked_signal.call_count, 1, msg="The signal wasn't called once")
+
+    @patch('bulk_tracker.signals.post_create_signal.send')
+    def test_model_create_should_only_emit_post_create_signal_once(self, mocked_signal):
+        # Arrange
+        signal_called_with = {}
+
+        def post_create_receiver(
+                sender,
+                objects: list[ModifiedObject[Post]],
+                tracking_info_: TrackingInfo | None = None,
+                **kwargs,
+        ):
+            signal_called_with["objects"] = objects
+            signal_called_with["tracking_info_"] = tracking_info_
+
+        post_create_signal.connect(post_create_receiver, sender=Post)
+
+        # Act
+        Post.objects.create(title="Sound of Winter", publish_date="1998-03-08", author=self.author_john)
+
+        # Assert
+        self.assertEqual(mocked_signal.call_count, 1, msg="The signal wasn't called once")
+
+    @patch('bulk_tracker.signals.post_create_signal.send')
+    def test_model_bulk_create_should_only_emit_post_create_signal_once(self, mocked_signal):
+        # Arrange
+        signal_called_with = {}
+
+        def post_create_receiver(
+                sender,
+                objects: list[ModifiedObject[Post]],
+                tracking_info_: TrackingInfo | None = None,
+                **kwargs,
+        ):
+            signal_called_with["objects"] = objects
+            signal_called_with["tracking_info_"] = tracking_info_
+
+        post_create_signal.connect(post_create_receiver, sender=Post)
+
+        posts = [
+            Post(title="Sound of Winter", publish_date="1998-01-08", author=self.author_john),
+            Post(title="Sound of Summer", publish_date="1998-06-08", author=self.author_john),
+        ]
+
+        # Act
+        Post.objects.bulk_create(posts)
+
+        # Assert
+        self.assertEqual(mocked_signal.call_count, 1, msg="The signal wasn't called once")
