@@ -4,7 +4,9 @@ django-bulk-tracker
 [![Build Status](https://github.com/hassaanalansary/django-bulk-tracker/actions/workflows/tests.yml/badge.svg)](https://github.com/hassaanalansary/django-bulk-tracker/actions)
 
 
-
+Documentation
+=============
+https://django-bulk-tracker.readthedocs.io/en/latest/
 
 Run tests
 ==========
@@ -14,7 +16,7 @@ pytest
 ```
 
 Contribute
-----------
+==========
 
 If you have great ideas for django-bulk-tracker, or if you like to improve something,
 feel free to fork this repository and/or create a pull request. 
