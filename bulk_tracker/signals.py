@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections.abc import Iterable
 from typing import TYPE_CHECKING, Any
 
+from django.db import transaction
 from django.dispatch import Signal
 
 from bulk_tracker.helper_objects import ModifiedObject, TrackingInfo
@@ -61,10 +62,12 @@ def send_post_create_signal(
 ):
     modified_objects = [ModifiedObject(ob, {}) for ob in objs]
     if modified_objects:
-        post_create_signal.send(
-            objects=modified_objects,
-            sender=model,
-            tracking_info_=tracking_info_,
+        transaction.on_commit(
+            lambda: post_create_signal.send(
+                objects=modified_objects,
+                sender=model,
+                tracking_info_=tracking_info_,
+            )
         )
 
 
@@ -85,10 +88,12 @@ def send_post_update_signal(
             modified_objects.append(ModifiedObject(obj, diff_dict))
 
     if modified_objects:
-        post_update_signal.send(
-            sender=model,
-            objects=modified_objects,
-            tracking_info_=tracking_info_,
+        transaction.on_commit(
+            lambda: post_update_signal.send(
+                sender=model,
+                objects=modified_objects,
+                tracking_info_=tracking_info_,
+            )
         )
 
 
@@ -97,8 +102,10 @@ def send_post_delete_signal(
 ):
     modified_objects = [ModifiedObject(ob, {}) for ob in objs]
     if modified_objects:
-        post_delete_signal.send(
-            objects=modified_objects,
-            sender=model,
-            tracking_info_=tracking_info_,
+        transaction.on_commit(
+            lambda: post_delete_signal.send(
+                objects=modified_objects,
+                sender=model,
+                tracking_info_=tracking_info_,
+            )
         )
