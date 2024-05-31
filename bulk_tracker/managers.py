@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from auditlog.models import LogEntry
 from django.db import connections, transaction
 from django.db.models import Expression, Manager, QuerySet
 from django.db.models.expressions import Case, Value, When
@@ -46,6 +47,11 @@ class BulkTrackerQuerySet(QuerySet):
 
         result = super().update(**kwargs)
         send_post_update_signal(queryset, self.model, old_values, tracking_info_)
+        if getattr(self.model, "enable_bulk_audit_log", False):
+            log_entries = []
+            for instance in queryset:
+                log_entries.append(LogEntry())
+            LogEntry.objects.bulk_create(log_entries)
         return result
 
     def create(self, *, tracking_info_: TrackingInfo | None = None, **kwargs):
@@ -115,6 +121,22 @@ class BulkTrackerQuerySet(QuerySet):
         """
         objs = super().bulk_create(*args, **kwargs)
         send_post_create_signal(objs, self.model, tracking_info_)
+        if getattr(self.model, "enable_bulk_audit_log", False):
+            import json
+
+            log_entries = []
+            for obj in objs:
+                changes = model_instance_diff(None, obj)
+
+                LogEntry.objects.log_create(
+                    obj,
+                    action=LogEntry.Action.CREATE,
+                    changes=json.dumps(changes),
+                )
+
+                log_entries.append(LogEntry())
+            LogEntry.objects.bulk_create(log_entries)
+
         return objs
 
     def delete(self, *, tracking_info_: TrackingInfo | None = None, **kwarg):
