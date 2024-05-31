@@ -23,4 +23,5 @@ class TrackingInfo:
     comment: str | None = None
     reason: Model | None = None
     system: str | None = None
+    is_robust: bool = False
     kwargs: dict[str, Any] = field(default_factory=dict)

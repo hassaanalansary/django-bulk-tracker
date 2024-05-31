@@ -224,3 +224,19 @@ class TestCreateSignal(TransactionTestCase):
 
         signal_called_with_second = mocked_signal.call_args_list[1].kwargs
         self.assertEqual(signal_called_with_second["sender"], Author)
+
+    @patch("bulk_tracker.signals.post_create_signal.send")
+    @patch("bulk_tracker.signals.post_create_signal.send_robust")
+    def test_should_use_robust_send_if_is_robust_is_true_in_tracking_info(self, mocked_signal_robust, mocked_signal):
+        # Arrange
+        posts = [
+            Post(title="Sound of Winter", publish_date="1998-01-08", author=self.author_john),
+            Post(title="Sound of Summer", publish_date="1998-06-08", author=self.author_john),
+        ]
+
+        # Act
+        Post.objects.bulk_create(posts, tracking_info_=TrackingInfo(is_robust=True))
+
+        # Assert
+        mocked_signal.assert_not_called()
+        mocked_signal_robust.assert_called_once()
