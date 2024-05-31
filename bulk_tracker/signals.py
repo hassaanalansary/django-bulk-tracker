@@ -62,8 +62,12 @@ def send_post_create_signal(
 ):
     modified_objects = [ModifiedObject(ob, {}) for ob in objs]
     if modified_objects:
+        if tracking_info_ and tracking_info_.is_robust:
+            method = post_create_signal.send_robust
+        else:
+            method = post_create_signal.send
         transaction.on_commit(
-            lambda: post_create_signal.send(
+            lambda: method(
                 objects=modified_objects,
                 sender=model,
                 tracking_info_=tracking_info_,
@@ -88,8 +92,12 @@ def send_post_update_signal(
             modified_objects.append(ModifiedObject(obj, diff_dict))
 
     if modified_objects:
+        if tracking_info_ and tracking_info_.is_robust:
+            method = post_update_signal.send_robust
+        else:
+            method = post_update_signal.send
         transaction.on_commit(
-            lambda: post_update_signal.send(
+            lambda: method(
                 sender=model,
                 objects=modified_objects,
                 tracking_info_=tracking_info_,
@@ -98,12 +106,18 @@ def send_post_update_signal(
 
 
 def send_post_delete_signal(
-    objs: Iterable[BulkTrackerModel], model: type[BulkTrackerModel], tracking_info_: TrackingInfo | None = None
+    objs: Iterable[BulkTrackerModel],
+    model: type[BulkTrackerModel],
+    tracking_info_: TrackingInfo | None = None,
 ):
     modified_objects = [ModifiedObject(ob, {}) for ob in objs]
     if modified_objects:
+        if tracking_info_ and tracking_info_.is_robust:
+            method = post_delete_signal.send_robust
+        else:
+            method = post_delete_signal.send
         transaction.on_commit(
-            lambda: post_delete_signal.send(
+            lambda: method(
                 objects=modified_objects,
                 sender=model,
                 tracking_info_=tracking_info_,
