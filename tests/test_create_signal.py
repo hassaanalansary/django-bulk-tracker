@@ -116,7 +116,6 @@ class TestCreateSignal(TransactionTestCase):
     @patch("bulk_tracker.signals.post_create_signal.send")
     def test_model_save_should_only_emit_post_create_signal_once(self, mocked_signal):
         # Arrange
-        signal_called_with = {}
 
         def post_create_receiver(
             sender,
@@ -124,8 +123,7 @@ class TestCreateSignal(TransactionTestCase):
             tracking_info_: TrackingInfo | None = None,
             **kwargs,
         ):
-            signal_called_with["objects"] = objects
-            signal_called_with["tracking_info_"] = tracking_info_
+            pass
 
         post_create_signal.connect(post_create_receiver, sender=Post)
 
@@ -133,7 +131,7 @@ class TestCreateSignal(TransactionTestCase):
         Post(title="Sound of Winter", publish_date="1998-01-08", author=self.author_john).save()
 
         # Assert
-        self.assertEqual(mocked_signal.call_count, 1, msg="The signal wasn't called once")
+        mocked_signal.assert_called_once()
 
     @patch("bulk_tracker.signals.post_create_signal.send")
     def test_model_create_should_only_emit_post_create_signal_once(self, mocked_signal):
@@ -155,7 +153,7 @@ class TestCreateSignal(TransactionTestCase):
         Post.objects.create(title="Sound of Winter", publish_date="1998-03-08", author=self.author_john)
 
         # Assert
-        self.assertEqual(mocked_signal.call_count, 1, msg="The signal wasn't called once")
+        mocked_signal.assert_called_once()
 
     @patch("bulk_tracker.signals.post_create_signal.send")
     def test_model_bulk_create_should_only_emit_post_create_signal_once(self, mocked_signal):
@@ -182,7 +180,7 @@ class TestCreateSignal(TransactionTestCase):
         Post.objects.bulk_create(posts)
 
         # Assert
-        self.assertEqual(mocked_signal.call_count, 1, msg="The signal wasn't called once")
+        mocked_signal.assert_called_once()
 
     @patch("bulk_tracker.signals.post_create_signal.send")
     def test_create_signal_should_be_only_emitted_after_transaction_commit(self, mocked_signal):

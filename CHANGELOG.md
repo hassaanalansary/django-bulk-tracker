@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## 0.0.8 (2024-05-31)
+## 0.1.0 (2024-05-31)
 - `post_create_signal()`, `post_update_signal()`, and `post_delete_signal()` were not waiting for transaction to commit before sending signals. 
 This was causing the signals to be sent before the object was actually created/updated/deleted, Causing a race condition.
 This has been fixed by using `transaction.on_commit()`. 

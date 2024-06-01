@@ -63,7 +63,7 @@ in case of ``post_create_signal`` and ``post_delete_signal``, ``changed_values``
         user = self.request.user
         MyModel.objects.filter(name='john').update(
             name='jack',
-            tracking_info_=TrackingInfo(user=user, comment="Updated from a function", kwargs={'app-build':1.1.8}),
+            tracking_info_=TrackingInfo(user=user, comment="Updated from a function", kwargs={'app-build':'1.1.8'}, is_robust=True),
             )
 
 .. hint::
@@ -99,7 +99,19 @@ as in ::
         tracker = FieldTracker()
 
 
+robust_send
+----------
 
+``robust_send`` if you have multiple receivers for the same signal, and you want to make sure that all of them are executed, even if one of them raise an exception.
+you can add ``TrackingInfo(is_robust=True)`` in your operation.
+you can read more about robust_send in the [official documentation](https://docs.djangoproject.com/en/5.0/topics/signals/#sending-signals)
+
+as in::
+
+    MyModel.objects.filter(name='john').update(
+        name='jack',
+        tracking_info_=TrackingInfo(is_robust=True),
+        )
 Complete Example
 ================
 
