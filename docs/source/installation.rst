@@ -14,7 +14,7 @@ The repository can be found at https://github.com/hassaanalansary/django-bulk-tr
 - Python 3.9 or higher
 - Django 3.2 or higher
 
-``django-bulk-tracker`` is currently tested with Python 3.9+ and Django 3.2 and 4.0+.
+``django-bulk-tracker`` is currently tested with Python 3.9+ and Django 3.2, 4.0+ and 5.0+.
 
 Adding django-bulk-tracker to your Django application
 -----------------------------------------------------
