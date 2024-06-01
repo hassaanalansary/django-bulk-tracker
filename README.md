@@ -2,7 +2,10 @@ django-bulk-tracker
 ===============
 
 [![Build Status](https://github.com/hassaanalansary/django-bulk-tracker/actions/workflows/tests.yml/badge.svg)](https://github.com/hassaanalansary/django-bulk-tracker/actions)
-
+[![Build Status](https://github.com/hassaanalansary/django-bulk-tracker/workflows/Test/badge.svg)](https://github.com/hassaanalansary/django-bulk-tracker/actions)
+[![codecov](https://codecov.io/gh/hassaanalansary/django-bulk-tracker/branch/master/graph/badge.svg)](https://codecov.io/gh/hassaanalansary/django-bulk-tracker)
+[![Supported Python versions](https://img.shields.io/pypi/pyversions/django-bulk-tracker.svg)](https://pypi.python.org/pypi/django-bulk-tracker)
+[![Supported Django versions](https://img.shields.io/pypi/djversions/django-bulk-tracker.svg)](https://pypi.python.org/pypi/django-bulk-tracker)
 
 Documentation
 =============
@@ -14,7 +17,6 @@ Run tests
 pip install -r requirements_dev.txt
 pytest
 ```
-Here's the provided text translated from reStructuredText (.rst) format to Markdown (.md):
 
 Usage
 =====
