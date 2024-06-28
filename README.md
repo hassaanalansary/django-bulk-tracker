@@ -182,8 +182,8 @@ Contribute
 ==========
 
 If you have great ideas for django-bulk-tracker, or if you like to improve something,
-feel free to fork this repository and/or create a pull request. 
-I'm open for suggestions. 
+feel free to fork this repository and/or create a pull request.
+I'm open for suggestions.
 If you like to discuss something with me (about django-bulk-tracker), please open an issue.
 
 
