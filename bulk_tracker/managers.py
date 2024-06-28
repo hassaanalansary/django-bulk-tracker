@@ -5,12 +5,11 @@ from django.db.models import Expression, Manager, QuerySet
 from django.db.models.expressions import Case, Value, When
 from django.db.models.functions import Cast
 
+from bulk_tracker.collector import BulkTrackerCollector
 from bulk_tracker.helper_objects import TrackingInfo
 from bulk_tracker.signals import (
-    post_delete_signal,
     post_update_signal,
     send_post_create_signal,
-    send_post_delete_signal,
     send_post_update_signal,
 )
 from bulk_tracker.utils import get_old_values
@@ -118,12 +117,36 @@ class BulkTrackerQuerySet(QuerySet):
         return objs
 
     def delete(self, *, tracking_info_: TrackingInfo | None = None, **kwarg):
-        if not post_delete_signal.has_listeners(self.model):
-            return super().delete()
-        objs = (obj for obj in self)
-        result = super().delete()
-        send_post_delete_signal(objs, self.model, tracking_info_)
-        return result
+        """
+        This is just overridden to use `BulkTrackerCollector` instead of default collector
+        Delete the records in the current QuerySet."""
+        self._not_support_combined_queries("delete")
+        if self.query.is_sliced:
+            raise TypeError("Cannot use 'limit' or 'offset' with delete().")
+        if self.query.distinct or self.query.distinct_fields:
+            raise TypeError("Cannot call delete() after .distinct().")
+        if self._fields is not None:
+            raise TypeError("Cannot call delete() after .values() or .values_list()")
+
+        del_query = self._chain()
+
+        # The delete is actually 2 queries - one to find related objects,
+        # and one to delete. Make sure that the discovery of related
+        # objects is performed on the same database as the deletion.
+        del_query._for_write = True
+
+        # Disable non-supported fields.
+        del_query.query.select_for_update = False
+        del_query.query.select_related = False
+        del_query.query.clear_ordering(force=True)
+
+        collector = BulkTrackerCollector(using=del_query.db, origin=self)
+        collector.collect(del_query)
+        deleted, _rows_count = collector.delete(tracking_info_=tracking_info_)
+
+        # Clear the result cache, in case this QuerySet gets reused.
+        self._result_cache = None
+        return deleted, _rows_count
 
 
 class BulkTrackerManager(Manager.from_queryset(BulkTrackerQuerySet)):
