@@ -44,12 +44,12 @@ now you can listen to the signals ``post_update_signal``, ``post_create_signal``
     ):
         do_stuff()
 
-.. hint:: 
+.. hint::
     all signals have the same signature for consistency,
     and also in case you want to assign one function to listen to multiple signals
 
 
-``ModifiedObject`` is a very simple object, it contains 2 attributes: 
+``ModifiedObject`` is a very simple object, it contains 2 attributes:
 1- ``instance`` this is your model instance after it has been updated, or created
 2- ``changed_values`` is dict[str, Any] which contains the changed fields only in case of ``post_update_signal``,
 in case of ``post_create_signal`` and ``post_delete_signal``, ``changed_values`` will be an empty dict ``{}``
@@ -58,7 +58,7 @@ in case of ``post_create_signal`` and ``post_delete_signal``, ``changed_values``
 **Optionally** you can pass ``tracking_info_`` to your functions, as in::
 
     from bulk_tracker.helper_objects import TrackingInfo
-    
+
     def a_function_that_updates_records():
         user = self.request.user
         MyModel.objects.filter(name='john').update(
@@ -69,7 +69,7 @@ in case of ``post_create_signal`` and ``post_delete_signal``, ``changed_values``
 .. hint::
      ``tracking_info_`` has a trailing underscore to avoid collision with your actual fields
 
-you can use ``TrackingInfo`` to implement any kind of behavior like logging in your 
+you can use ``TrackingInfo`` to implement any kind of behavior like logging in your
 signal handlers and you need to capture more info about the operation that is happening.
 
 
@@ -95,7 +95,7 @@ as in ::
 
     class MyModel(BulkTrackerModel):
 
-        objects = MyModelQuerySet.as_manager() # MyModelManager() if you have 
+        objects = MyModelQuerySet.as_manager() # MyModelManager() if you have
         tracker = FieldTracker()
 
 
