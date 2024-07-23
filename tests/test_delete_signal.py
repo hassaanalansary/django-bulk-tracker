@@ -125,7 +125,7 @@ class TestDeleteSignal(TransactionTestCase):
         mocked_signal.assert_not_called()
         mocked_signal_robust.assert_called_once()
 
-    def test_should_send_post_delete_signal_for_foreign_keys_with_cascade_if_fast_delete_is_used(self):
+    def test_queryset_delete_should_send_post_delete_signal_for_foreign_keys_with_cascade_if_fast_delete_is_used(self):
         # Arrange
         signal_called_with = {}
 
@@ -153,7 +153,9 @@ class TestDeleteSignal(TransactionTestCase):
         self.assertEqual(datetime.strptime("1998-01-08", "%Y-%m-%d").date(), modified_objects[0].instance.publish_date)
         self.assertEqual(self.author_john.id, modified_objects[0].instance.author_id)
 
-    def test_should_send_post_delete_signal_for_foreign_keys_with_cascade_if_fast_delete_is_not_used(self):
+    def test_queryset_delete_should_send_post_delete_signal_for_foreign_keys_with_cascade_if_fast_delete_is_not_used(
+        self,
+    ):
         # Arrange
         signal_called_with = {}
 
@@ -184,3 +186,73 @@ class TestDeleteSignal(TransactionTestCase):
         self.assertEqual("Sound of Winter", modified_objects[0].instance.title)
         self.assertEqual(datetime.strptime("1998-01-08", "%Y-%m-%d").date(), modified_objects[0].instance.publish_date)
         self.assertEqual(self.author_john.id, modified_objects[0].instance.author_id)
+
+    def test_model_delete_should_send_post_delete_signal_for_foreign_keys_with_cascade_if_fast_delete_is_used(self):
+        # Arrange
+        signal_called_with = {}
+
+        def post_delete_receiver(
+            sender,
+            objects: list[ModifiedObject[Post]],
+            tracking_info_: TrackingInfo | None = None,
+            **kwargs,
+        ):
+            signal_called_with.setdefault("times_called", 0)
+            signal_called_with["times_called"] += 1
+            signal_called_with["sender"] = sender
+            signal_called_with["objects"] = objects
+            signal_called_with["tracking_info_"] = tracking_info_
+
+        post_delete_signal.connect(post_delete_receiver, sender=Post)
+        post = Post.objects.create(title="Sound of Winter", publish_date="1998-01-08", author=self.author_john)
+        author_id = self.author_john.id
+
+        # Act
+        self.author_john.delete(tracking_info_=TrackingInfo(comment="This is a comment"))
+
+        # Assert
+        modified_objects: list[ModifiedObject[Post]] = signal_called_with["objects"]
+        self.assertEqual(signal_called_with["sender"], Post)
+        self.assertEqual(post.id, modified_objects[0].instance.id)
+        self.assertEqual("Sound of Winter", modified_objects[0].instance.title)
+        self.assertEqual(datetime.strptime("1998-01-08", "%Y-%m-%d").date(), modified_objects[0].instance.publish_date)
+        self.assertEqual(author_id, modified_objects[0].instance.author_id)
+        self.assertEqual("This is a comment", signal_called_with["tracking_info_"].comment)
+        self.assertEqual(1, signal_called_with["times_called"])
+
+    def test_model_delete_should_send_post_delete_signal_for_foreign_keys_with_cascade_if_fast_delete_is_not_used(self):
+        # Arrange
+        signal_called_with = {}
+
+        def pre_delete_receiver(**kwargs):
+            pass
+
+        def post_delete_receiver(
+            sender,
+            objects: list[ModifiedObject[Post]],
+            tracking_info_: TrackingInfo | None = None,
+            **kwargs,
+        ):
+            signal_called_with.setdefault("times_called", 0)
+            signal_called_with["times_called"] += 1
+            signal_called_with["sender"] = sender
+            signal_called_with["objects"] = objects
+            signal_called_with["tracking_info_"] = tracking_info_
+
+        pre_delete.connect(pre_delete_receiver, sender=Post)  # disable fast delete in `Collector`
+        post_delete_signal.connect(post_delete_receiver, sender=Post)
+        post = Post.objects.create(title="Sound of Winter", publish_date="1998-01-08", author=self.author_john)
+        author_id = self.author_john.id
+
+        # Act
+        self.author_john.delete(tracking_info_=TrackingInfo(comment="This is a comment"))
+
+        # Assert
+        modified_objects: list[ModifiedObject[Post]] = signal_called_with["objects"]
+        self.assertEqual(signal_called_with["sender"], Post)
+        self.assertEqual(post.id, modified_objects[0].instance.id)
+        self.assertEqual("Sound of Winter", modified_objects[0].instance.title)
+        self.assertEqual(datetime.strptime("1998-01-08", "%Y-%m-%d").date(), modified_objects[0].instance.publish_date)
+        self.assertEqual(author_id, modified_objects[0].instance.author_id)
+        self.assertEqual("This is a comment", signal_called_with["tracking_info_"].comment)
+        self.assertEqual(1, signal_called_with["times_called"])
