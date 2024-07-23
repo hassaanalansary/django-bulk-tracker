@@ -37,12 +37,15 @@ class BulkTrackerCollector(Collector):
         with transaction.atomic(using=self.using, savepoint=False):
             # send pre_delete signals
             for model, obj in self.instances_with_model():
+                origin = {}
+                if hasattr(self, "origin"):  # origin was removed in Django 3.2 and 4.0.
+                    origin = {"origin": self.origin}
                 if not model._meta.auto_created:
                     signals.pre_delete.send(
                         sender=model,
                         instance=obj,
                         using=self.using,
-                        origin=self.origin,
+                        **origin,
                     )
             bulk_tracker_deletes = defaultdict(list)
             # fast deletes
@@ -75,12 +78,15 @@ class BulkTrackerCollector(Collector):
                     bulk_tracker_deletes[model].extend(deepcopy(instances))
 
                 if not model._meta.auto_created:
+                    origin = {}
+                    if hasattr(self, "origin"):  # origin was removed in Django 3.2 and 4.0.
+                        origin = {"origin": self.origin}
                     for obj in instances:
                         signals.post_delete.send(
                             sender=model,
                             instance=obj,
                             using=self.using,
-                            origin=self.origin,
+                            **origin,
                         )
             for model, objs in bulk_tracker_deletes.items():
                 send_post_delete_signal(objs, model, tracking_info_)

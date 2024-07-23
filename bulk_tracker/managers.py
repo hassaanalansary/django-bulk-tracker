@@ -138,9 +138,15 @@ class BulkTrackerQuerySet(QuerySet):
         # Disable non-supported fields.
         del_query.query.select_for_update = False
         del_query.query.select_related = False
-        del_query.query.clear_ordering(force=True)
-
-        collector = BulkTrackerCollector(using=del_query.db, origin=self)
+        try:
+            del_query.query.clear_ordering(force=True)
+        except TypeError:
+            # Django 3.2 has force_empty not force
+            del_query.query.clear_ordering(force_empty=True)
+        origin = {}
+        if hasattr(self, "origin"):  # origin was removed in Django 3.2 and 4.0.
+            origin = {"origin": self.origin}
+        collector = BulkTrackerCollector(using=del_query.db, **origin)
         collector.collect(del_query)
         deleted, _rows_count = collector.delete(tracking_info_=tracking_info_)
 
