@@ -3,11 +3,11 @@
 All notable changes to this project will be documented in this file.
 
 ## 0.2.0 (2024-07-24)
-- `post_delete_signal()` was not being sent if a parent model was delete and triggered a cascade delete.
+- `post_delete_signal()` is now being sent if a parent model was deleted and triggered a cascade delete.
 
 now `post_delete_signal()` will be sent for all objects that are deleted in a cascade delete.
 This requires the parent to inherit from `BulkTrackerModel` or have a custom manager that inherits from `BulkTrackerManager`.
--- `post_delete_signal()` is not being sent yet if child is tracked by `BulkTrackerModel` but parent is not.
+post_delete_signal()` is not being sent yet if child is tracked by `BulkTrackerModel` but parent is not.
 
 ## 0.1.0 (2024-05-31)
 - `post_create_signal()`, `post_update_signal()`, and `post_delete_signal()` were not waiting for transaction to commit before sending signals.
