@@ -13,6 +13,14 @@ from bulk_tracker.signals import post_delete_signal, send_post_delete_signal
 
 
 class BulkTrackerCollector(Collector):
+
+    def _has_signal_listeners(self, model):
+        return (
+            signals.pre_delete.has_listeners(model) or
+            signals.post_delete.has_listeners(model) or
+            post_delete_signal.has_listeners(model)
+        )
+
     def delete(self, *, tracking_info_: TrackingInfo | None = None):
         # sort instance collections
         for model, instances in self.data.items():
