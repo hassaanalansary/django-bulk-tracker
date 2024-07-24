@@ -6,11 +6,7 @@ from model_utils import FieldTracker
 from bulk_tracker.collector import BulkTrackerCollector
 from bulk_tracker.helper_objects import TrackingInfo
 from bulk_tracker.managers import BulkTrackerManager
-from bulk_tracker.signals import (
-    send_post_create_signal,
-    send_post_delete_signal,
-    send_post_update_signal,
-)
+from bulk_tracker.signals import send_post_create_signal, send_post_update_signal
 
 
 class BulkTrackerModel(models.Model):
@@ -53,6 +49,4 @@ class BulkTrackerModel(models.Model):
         except TypeError:
             collector = BulkTrackerCollector(using=using)
         collector.collect([self], keep_parents=keep_parents)
-        ret = collector.delete(tracking_info_=tracking_info_)
-        send_post_delete_signal([self], model=self.__class__, tracking_info_=tracking_info_)
-        return ret
+        return collector.delete(tracking_info_=tracking_info_)

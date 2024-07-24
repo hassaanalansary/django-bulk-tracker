@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.2.1 (2024-07-24)
+- A fix where `post_delete_signal()` was called twice for a model in a foreign-key relationship gets deleted with a cascade deletion constraint.
+
 ## 0.2.0 (2024-07-24)
 - `post_delete_signal()` is now being sent if a parent model was deleted and triggered a cascade delete.
 
