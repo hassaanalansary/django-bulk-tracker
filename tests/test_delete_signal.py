@@ -3,7 +3,6 @@ from __future__ import annotations
 from datetime import datetime
 from unittest.mock import patch
 
-from django.db.models.signals import pre_delete
 from django.test import TransactionTestCase
 
 from bulk_tracker.helper_objects import ModifiedObject, TrackingInfo
@@ -72,7 +71,7 @@ class TestDeleteSignal(TransactionTestCase):
         self.assertEqual(2, len(signal_called_with["objects"]))
         self.assertEqual(None, signal_called_with["tracking_info_"])
 
-        modified_objects: list[ModifiedObject[Post]] = signal_called_with["objects"]
+        modified_objects: list[ModifiedObject[Post]] = sorted(signal_called_with["objects"], key=lambda o: o.instance.id)
 
         self.assertEqual("Sound of Winter", modified_objects[0].instance.title)
         self.assertEqual(datetime.strptime("1998-01-08", "%Y-%m-%d").date(), modified_objects[0].instance.publish_date)
@@ -117,6 +116,15 @@ class TestDeleteSignal(TransactionTestCase):
     @patch("bulk_tracker.signals.post_delete_signal.send_robust")
     def test_should_use_robust_send_if_is_robust_is_true_in_tracking_info(self, mocked_signal_robust, mocked_signal):
         # Arrange
+        def post_delete_receiver(
+            sender,
+            objects: list[ModifiedObject[Post]],
+            tracking_info_: TrackingInfo | None = None,
+            **kwargs,
+        ):
+            pass
+
+        post_delete_signal.connect(post_delete_receiver, sender=Author)
 
         # Act
         self.author_john.delete(tracking_info_=TrackingInfo(is_robust=True))
