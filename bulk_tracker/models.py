@@ -6,10 +6,7 @@ from model_utils import FieldTracker
 from bulk_tracker.collector import BulkTrackerCollector
 from bulk_tracker.helper_objects import TrackingInfo
 from bulk_tracker.managers import BulkTrackerManager
-from bulk_tracker.signals import (
-    send_post_create_signal,
-    send_post_update_signal,
-)
+from bulk_tracker.signals import send_post_create_signal, send_post_update_signal
 
 
 class BulkTrackerModel(models.Model):
