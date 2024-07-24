@@ -230,7 +230,7 @@ class TestDeleteSignal(TransactionTestCase):
 
 
         post_delete_signal.connect(post_delete_receiver_author, sender=Author)
-        post_delete_signal.connect(post_delete_receiver_post, sender=Post)  # disable fast delete in `Collector`
+        post_delete_signal.connect(post_delete_receiver_post, sender=Post)
 
         posts = [Post.objects.create(title="Sound of Winter", publish_date="1998-01-08", author=self.author_john),
                  Post.objects.create(title="Sound of Summer", publish_date="1998-10-08", author=self.author_john)]
@@ -344,7 +344,7 @@ class TestDeleteSignal(TransactionTestCase):
             signal_called_with_author["objects"] = objects
             signal_called_with_author["tracking_info_"] = tracking_info_
 
-        post_delete_signal.connect(post_delete_receiver_post, sender=Post) # disable fast delete in `Collector`
+        post_delete_signal.connect(post_delete_receiver_post, sender=Post)
         post_delete_signal.connect(post_delete_receiver_author, sender=Author)
         post = Post.objects.create(title="Sound of Winter", publish_date="1998-01-08", author=self.author_john)
         author_id = self.author_john.id
