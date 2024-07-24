@@ -49,6 +49,4 @@ class BulkTrackerModel(models.Model):
         except TypeError:
             collector = BulkTrackerCollector(using=using)
         collector.collect([self], keep_parents=keep_parents)
-        ret = collector.delete(tracking_info_=tracking_info_)
-
-        return ret
+        return collector.delete(tracking_info_=tracking_info_)
