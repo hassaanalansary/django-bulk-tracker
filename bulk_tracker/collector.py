@@ -14,13 +14,6 @@ from bulk_tracker.signals import post_delete_signal, send_post_delete_signal
 
 class BulkTrackerCollector(Collector):
 
-    def _has_signal_listeners(self, model):
-        return (
-            signals.pre_delete.has_listeners(model) or
-            signals.post_delete.has_listeners(model) or
-            post_delete_signal.has_listeners(model)
-        )
-
     def delete(self, *, tracking_info_: TrackingInfo | None = None):
         # sort instance collections
         for model, instances in self.data.items():
@@ -37,8 +30,13 @@ class BulkTrackerCollector(Collector):
         if len(self.data) == 1 and len(instances) == 1:
             instance = list(instances)[0]
             if self.can_fast_delete(instance):
+                to_be_deleted = None
+                if post_delete_signal.has_listeners(model):
+                    to_be_deleted = deepcopy(instance)
                 with transaction.mark_for_rollback_on_error(self.using):
                     count = sql.DeleteQuery(model).delete_batch([instance.pk], self.using)
+                if to_be_deleted:
+                    send_post_delete_signal([to_be_deleted], model, tracking_info_)
                 setattr(instance, model._meta.pk.attname, None)
                 return count, {model._meta.label: count}
 
